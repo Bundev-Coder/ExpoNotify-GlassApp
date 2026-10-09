@@ -31,12 +31,15 @@ jobs:
 
       - name: Biên dịch ARM64 cho iPhone thật (Không cần tài khoản $99)
         run: |
-          cd ios
-          xcodebuild -workspace NotifyGlass.xcworkspace \
-                     -scheme NotifyGlass \
+          WORKSPACE_PATH=$(ls -d ios/*.xcworkspace | head -n 1)
+          WORKSPACE_NAME=$(basename "$WORKSPACE_PATH")
+          SCHEME_NAME="${WORKSPACE_NAME%.xcworkspace}"
+          echo "Compiling $WORKSPACE_NAME with scheme $SCHEME_NAME..."
+          xcodebuild -workspace "$WORKSPACE_PATH" \
+                     -scheme "$SCHEME_NAME" \
                      -configuration Release \
                      -destination 'generic/platform=iOS' \
-                     -archivePath NotifyGlass.xcarchive \
+                     -archivePath "ios/App.xcarchive" \
                      archive \
                      CODE_SIGNING_ALLOWED=NO \
                      CODE_SIGNING_REQUIRED=NO
@@ -44,10 +47,12 @@ jobs:
       - name: Đóng gói thành file NotifyGlass_Device.ipa
         run: |
           mkdir -p build_output/Payload
-          cp -r ios/NotifyGlass.xcarchive/Products/Applications/NotifyGlass.app build_output/Payload/
+          APP_PATH=$(find ios/App.xcarchive/Products/Applications -name "*.app" -maxdepth 1 | head -n 1)
+          echo "Found app bundle at: $APP_PATH"
+          cp -r "$APP_PATH" build_output/Payload/
           cd build_output
           zip -r -9 NotifyGlass_Device.ipa Payload
-          ls -la
+          ls -lh NotifyGlass_Device.ipa
 
       - name: Xuất file IPA để tải về
         uses: actions/upload-artifact@v4
