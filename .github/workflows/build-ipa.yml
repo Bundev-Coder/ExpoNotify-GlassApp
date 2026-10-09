@@ -1,0 +1,57 @@
+name: Build iOS IPA (ARM64 Device)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build-ipa:
+    runs-on: macos-14 # Chạy trên macOS Apple Silicon (M1/M2) của GitHub
+    steps:
+      - name: Checkout mã nguồn
+        uses: actions/checkout@v4
+
+      - name: Cài đặt Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Cài đặt Dependencies
+        run: npm ci || npm install
+
+      - name: Xuất dự án Native iOS (Expo Prebuild)
+        run: npx expo prebuild --platform ios
+
+      - name: Cài đặt CocoaPods
+        run: |
+          cd ios
+          pod install
+
+      - name: Biên dịch ARM64 cho iPhone thật (Không cần tài khoản $99)
+        run: |
+          cd ios
+          xcodebuild -workspace NotifyGlass.xcworkspace \
+                     -scheme NotifyGlass \
+                     -configuration Release \
+                     -destination 'generic/platform=iOS' \
+                     -archivePath NotifyGlass.xcarchive \
+                     archive \
+                     CODE_SIGNING_ALLOWED=NO \
+                     CODE_SIGNING_REQUIRED=NO
+
+      - name: Đóng gói thành file NotifyGlass_Device.ipa
+        run: |
+          mkdir -p build_output/Payload
+          cp -r ios/NotifyGlass.xcarchive/Products/Applications/NotifyGlass.app build_output/Payload/
+          cd build_output
+          zip -r -9 NotifyGlass_Device.ipa Payload
+          ls -la
+
+      - name: Xuất file IPA để tải về
+        uses: actions/upload-artifact@v4
+        with:
+          name: NotifyGlass_RealDevice_IPA
+          path: build_output/NotifyGlass_Device.ipa
+          retention-days: 7
