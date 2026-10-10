@@ -15,20 +15,15 @@ jobs:
       - name: Checkout mã nguồn
         uses: actions/checkout@v4
 
-      - name: Kiểm tra & Chọn Xcode có iOS SDK
+      - name: Chọn Xcode mới nhất hỗ trợ Swift 6.2 & iOS SDK
         run: |
-          if xcrun --show-sdk-path --sdk iphoneos >/dev/null 2>&1; then
-            echo "Default Xcode already has iOS SDK: $(xcodebuild -version | head -n 1)"
-          else
-            for xcode in /Applications/Xcode*.app; do
-              if DEVELOPER_DIR="$xcode/Contents/Developer" xcrun --show-sdk-path --sdk iphoneos >/dev/null 2>&1; then
-                echo "Switching to Xcode with iOS SDK: $xcode"
-                sudo xcode-select -s "$xcode/Contents/Developer"
-                break
-              fi
-            done
+          LATEST_XCODE=$(ls -d /Applications/Xcode_2*.app /Applications/Xcode_16*.app /Applications/Xcode*.app 2>/dev/null | sort -V | tail -n 1)
+          if [ -n "$LATEST_XCODE" ]; then
+            echo "Selecting Xcode: $LATEST_XCODE"
+            sudo xcode-select -s "$LATEST_XCODE/Contents/Developer"
           fi
           xcodebuild -version
+          swift --version
           echo "iOS SDK Path: $(xcrun --show-sdk-path --sdk iphoneos)"
 
       - name: Cài đặt Node.js
