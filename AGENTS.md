@@ -39,3 +39,17 @@ Docs: https://docs.expo.dev/eas/index.md
 - If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
 - Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
 - Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+
+## iOS Physical Device IPA Build Standard (Free / Unsigned Sideload)
+
+When building an iOS `.ipa` for physical device installation without a $99 Apple Developer account:
+- **Do NOT** use EAS free simulator profiles (`iphonesimulator` / `x86_64`) as they crash on physical iPhones.
+- **ALWAYS** use the GitHub Actions workflow `.github/workflows/build-ipa.yml` on `macos-15` Apple Silicon runner.
+- Target `generic/platform=iOS` with Xcode build settings:
+  `CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""`
+- Ensure `patch_package.py` runs before `xcodebuild` to apply Expo SDK 57 / Swift 6.2 compatibility fixes:
+  1. Pin `Package.swift` platforms to `.iOS("16.4")` only.
+  2. Strip `SWIFT_RETURNS_RETAINED` from `RuntimeScheduler.h` constructors.
+  3. Wrap call-scoped pointers in `NonisolatedUnsafeVar` in `JavaScriptRuntime.swift`.
+- Output `.ipa` via GitHub Release for direct 1-click download, ready for Sideloadly / AltStore / TrollStore / Scarlet.
+
