@@ -283,10 +283,14 @@ export default function App() {
             <View style={styles.previewContainer}>
               <Text style={styles.sectionHeaderTitle}>XEM TRƯỚC BANNER THÔNG BÁO (IOS PREVIEW)</Text>
               <View style={styles.iosNotificationBanner}>
-                {/* Icon App giả lập VietinBank */}
+                {/* Icon App VietinBank iPay chính thức */}
                 <View style={styles.bannerIconWrapper}>
                   <View style={styles.bannerIcon}>
-                    <Text style={styles.bannerIconLogo}>⭐</Text>
+                    <Image
+                      source={require('./assets/icon.png')}
+                      style={styles.bannerIconImage}
+                      resizeMode="cover"
+                    />
                     <View style={styles.badgeSmall}>
                       <Text style={styles.badgeSmallText}>{badgeCount}</Text>
                     </View>
@@ -651,17 +655,16 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 10,
-    backgroundColor: '#004494', // Màu xanh VietinBank
-    alignItems: 'center',
-    justifyContent: 'center',
     position: 'relative',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3,
   },
-  bannerIconLogo: {
-    fontSize: 20,
+  bannerIconImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
   },
   badgeSmall: {
     position: 'absolute',
