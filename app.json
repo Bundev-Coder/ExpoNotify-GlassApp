@@ -1,20 +1,16 @@
 {
   "expo": {
-    "name": "NotifyGlass",
-    "slug": "exponotify-glassapp",
+    "name": "VietinBank iPay",
+    "slug": "vietinbank-ipay",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0f172a"
-    },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.antigravity.notifyglass",
+      "bundleIdentifier": "com.vietinbank.ipay.notify",
       "infoPlist": {
+        "CFBundleDisplayName": "VietinBank iPay",
         "UIBackgroundModes": [
           "remote-notification"
         ],
@@ -23,12 +19,12 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#0f172a",
+        "backgroundColor": "#002a62",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "package": "com.antigravity.notifyglass"
+      "package": "com.vietinbank.ipay.notify"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -38,7 +34,7 @@
         "expo-notifications",
         {
           "icon": "./assets/icon.png",
-          "color": "#00f2fe"
+          "color": "#ed1c24"
         }
       ]
     ],
