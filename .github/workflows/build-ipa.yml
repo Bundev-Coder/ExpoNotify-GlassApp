@@ -15,11 +15,21 @@ jobs:
       - name: Checkout mã nguồn
         uses: actions/checkout@v4
 
-      - name: Chọn phiên bản Xcode 16.2
+      - name: Kiểm tra & Chọn Xcode có iOS SDK
         run: |
-          sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
+          if xcrun --show-sdk-path --sdk iphoneos >/dev/null 2>&1; then
+            echo "Default Xcode already has iOS SDK: $(xcodebuild -version | head -n 1)"
+          else
+            for xcode in /Applications/Xcode*.app; do
+              if DEVELOPER_DIR="$xcode/Contents/Developer" xcrun --show-sdk-path --sdk iphoneos >/dev/null 2>&1; then
+                echo "Switching to Xcode with iOS SDK: $xcode"
+                sudo xcode-select -s "$xcode/Contents/Developer"
+                break
+              fi
+            done
+          fi
           xcodebuild -version
-          swift --version
+          echo "iOS SDK Path: $(xcrun --show-sdk-path --sdk iphoneos)"
 
       - name: Cài đặt Node.js
         uses: actions/setup-node@v4
@@ -30,23 +40,8 @@ jobs:
       - name: Cài đặt Dependencies
         run: npm install
 
-      - name: Patch ExpoModulesJSI tương thích Swift 6.0 (Xcode 16.2)
-        run: |
-          python3 -c '
-          import re, os
-          path = "node_modules/expo-modules-jsi/apple/Package.swift"
-          if os.path.exists(path):
-              text = open(path).read()
-              text = text.replace("swift-tools-version: 6.2", "swift-tools-version: 6.0")
-              text = text.replace(".enableUpcomingFeature(\"InferIsolatedConformances\"),", "")
-              text = text.replace(".enableUpcomingFeature(\"NonisolatedNonsendingByDefault\"),", "")
-              text = re.sub(r",\s*(\n\s*[\)\]])", r"\1", text)
-              open(path, "w").write(text)
-              print("Package.swift patched successfully for Swift 6.0")
-          '
-          if [ -f "node_modules/expo-modules-jsi/apple/scripts/build-xcframework.sh" ]; then
-            sed -i '' 's/-quiet//g' node_modules/expo-modules-jsi/apple/scripts/build-xcframework.sh
-          fi
+      - name: Patch ExpoModulesJSI cho kiến trúc iOS & Swift 6.0
+        run: python3 patch_package.py
 
       - name: Xuất dự án Native iOS (Expo Prebuild)
         run: npx expo prebuild --platform ios --clean --no-install
