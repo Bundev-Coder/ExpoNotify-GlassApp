@@ -32,10 +32,18 @@ jobs:
 
       - name: Patch ExpoModulesJSI tương thích Swift 6.0 (Xcode 16.2)
         run: |
-          if [ -f "node_modules/expo-modules-jsi/apple/Package.swift" ]; then
-            sed -i '' 's/swift-tools-version: 6.2/swift-tools-version: 6.0/g' node_modules/expo-modules-jsi/apple/Package.swift
-            head -n 3 node_modules/expo-modules-jsi/apple/Package.swift
-          fi
+          python3 -c '
+          import re, os
+          path = "node_modules/expo-modules-jsi/apple/Package.swift"
+          if os.path.exists(path):
+              text = open(path).read()
+              text = text.replace("swift-tools-version: 6.2", "swift-tools-version: 6.0")
+              text = text.replace(".enableUpcomingFeature(\"InferIsolatedConformances\"),", "")
+              text = text.replace(".enableUpcomingFeature(\"NonisolatedNonsendingByDefault\"),", "")
+              text = re.sub(r",\s*(\n\s*[\)\]])", r"\1", text)
+              open(path, "w").write(text)
+              print("Package.swift patched successfully for Swift 6.0")
+          '
           if [ -f "node_modules/expo-modules-jsi/apple/scripts/build-xcframework.sh" ]; then
             sed -i '' 's/-quiet//g' node_modules/expo-modules-jsi/apple/scripts/build-xcframework.sh
           fi
