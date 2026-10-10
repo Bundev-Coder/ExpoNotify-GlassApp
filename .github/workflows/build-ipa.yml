@@ -15,13 +15,9 @@ jobs:
       - name: Checkout mã nguồn
         uses: actions/checkout@v4
 
-      - name: Chọn phiên bản Xcode mới nhất (Hỗ trợ Swift 6.2+)
+      - name: Chọn phiên bản Xcode 16.2
         run: |
-          LATEST_XCODE=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -n 1)
-          if [ -n "$LATEST_XCODE" ]; then
-            echo "Using Xcode: $LATEST_XCODE"
-            sudo xcode-select -s "$LATEST_XCODE/Contents/Developer"
-          fi
+          sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
           xcodebuild -version
           swift --version
 
@@ -33,6 +29,16 @@ jobs:
 
       - name: Cài đặt Dependencies
         run: npm install
+
+      - name: Patch ExpoModulesJSI tương thích Swift 6.0 (Xcode 16.2)
+        run: |
+          if [ -f "node_modules/expo-modules-jsi/apple/Package.swift" ]; then
+            sed -i '' 's/swift-tools-version: 6.2/swift-tools-version: 6.0/g' node_modules/expo-modules-jsi/apple/Package.swift
+            head -n 3 node_modules/expo-modules-jsi/apple/Package.swift
+          fi
+          if [ -f "node_modules/expo-modules-jsi/apple/scripts/build-xcframework.sh" ]; then
+            sed -i '' 's/-quiet//g' node_modules/expo-modules-jsi/apple/scripts/build-xcframework.sh
+          fi
 
       - name: Xuất dự án Native iOS (Expo Prebuild)
         run: npx expo prebuild --platform ios --clean --no-install
