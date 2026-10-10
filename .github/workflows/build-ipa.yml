@@ -1,9 +1,12 @@
-name: Build iOS IPA (ARM64 Device)
+name: Build iOS IPA (ARM64 Real Device)
 
 on:
   workflow_dispatch:
   push:
     branches: [ main, master ]
+
+permissions:
+  contents: write
 
 jobs:
   build-ipa:
@@ -19,10 +22,10 @@ jobs:
           cache: 'npm'
 
       - name: Cài đặt Dependencies
-        run: npm ci || npm install
+        run: npm install
 
       - name: Xuất dự án Native iOS (Expo Prebuild)
-        run: npx expo prebuild --platform ios
+        run: npx expo prebuild --platform ios --clean --no-install
 
       - name: Cài đặt CocoaPods
         run: |
@@ -42,21 +45,33 @@ jobs:
                      -archivePath "ios/App.xcarchive" \
                      archive \
                      CODE_SIGNING_ALLOWED=NO \
-                     CODE_SIGNING_REQUIRED=NO
+                     CODE_SIGNING_REQUIRED=NO \
+                     CODE_SIGN_IDENTITY=""
 
       - name: Đóng gói thành file NotifyGlass_Device.ipa
         run: |
           mkdir -p build_output/Payload
           APP_PATH=$(find ios/App.xcarchive/Products/Applications -name "*.app" -maxdepth 1 | head -n 1)
           echo "Found app bundle at: $APP_PATH"
-          cp -r "$APP_PATH" build_output/Payload/
+          cp -R "$APP_PATH" build_output/Payload/
           cd build_output
           zip -r -9 NotifyGlass_Device.ipa Payload
           ls -lh NotifyGlass_Device.ipa
 
-      - name: Xuất file IPA để tải về
+      - name: Xuất file IPA qua Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: NotifyGlass_RealDevice_IPA
           path: build_output/NotifyGlass_Device.ipa
           retention-days: 7
+
+      - name: Tạo GitHub Release (Tải trực tiếp file .ipa)
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        with:
+          tag_name: release-${{ github.run_number }}
+          name: "NotifyGlass v1.0 (Build ${{ github.run_number }})"
+          body: "Tệp tin NotifyGlass_Device.ipa biên dịch chuẩn kiến trúc ARM64 iOS thật (không phải simulator), sẵn sàng cài đặt qua AltStore / Sideloadly / TrollStore / Scarlet."
+          files: build_output/NotifyGlass_Device.ipa
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
