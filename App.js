@@ -28,19 +28,17 @@ Notifications.setNotificationHandler({
 });
 
 export default function App() {
-  // --- STATE DỮ LIỆU GIAO DỊCH (Mặc định chuẩn 100% theo ảnh VietinBank iPay của bạn) ---
-  const [bank, setBank] = useState('vietinbank'); // 'vietinbank' | 'vcb' | 'mbbank' | 'techcombank'
-  const [transactionType, setTransactionType] = useState('minus'); // 'minus' (-) hoặc 'plus' (+)
-  const [accountNumber, setAccountNumber] = useState('59xxx783');
-  const [amount, setAmount] = useState('30000');
-  const [balance, setBalance] = useState('882');
-  const [counterpartyName, setCounterpartyName] = useState('NGUYEN PHUONG DUY');
-  const [counterpartyAccount, setCounterpartyAccount] = useState('105887004147');
-  const [content, setContent] = useState('NGUYEN HOANG VINH chuyen tien');
-  const [badgeCount, setBadgeCount] = useState('7'); // Mặc định số 7 như badge trên ảnh!
+  // --- STATE DỮ LIỆU GIAO DỊCH CHUẨN MB BANK ---
+  const [transactionType, setTransactionType] = useState('plus'); // 'plus' (+) hoặc 'minus' (-)
+  const [accountNumber, setAccountNumber] = useState('0123456789');
+  const [amount, setAmount] = useState('5000000');
+  const [balance, setBalance] = useState('52500000');
+  const [counterpartyName, setCounterpartyName] = useState('NGUYEN VAN A');
+  const [counterpartyAccount, setCounterpartyAccount] = useState('0987654321');
+  const [content, setContent] = useState('NGUYEN VAN A chuyen tien');
+  const [badgeCount, setBadgeCount] = useState('1'); // Mặc định 1 thông báo mới
   
   // Hẹn giờ gửi
-  const [delaySeconds, setDelaySeconds] = useState(0); // 0s, 5s, 10s, 30s
   const [isCountingDown, setIsCountingDown] = useState(false);
   const [countdownRemaining, setCountdownRemaining] = useState(0);
   
@@ -85,7 +83,7 @@ export default function App() {
     }
   };
 
-  // Định dạng ngày giờ: DD/MM/YY HH:mm (VD: 09/10/26 17:04)
+  // Định dạng ngày giờ: DD/MM/YY HH:mm (VD: 10/10/26 15:00)
   const getFormattedDateTime = () => {
     const now = new Date();
     const dd = String(now.getDate()).padStart(2, '0');
@@ -103,24 +101,16 @@ export default function App() {
     return clean.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
-  // Tạo chuỗi nội dung biến động số dư theo chuẩn từng ngân hàng
+  // Tạo chuỗi nội dung biến động số dư theo chuẩn MB Bank
   const buildNotificationBody = () => {
     const sign = transactionType === 'minus' ? '-' : '+';
     const formattedAmount = formatNumber(amount);
     const formattedBalance = formatNumber(balance);
     const timeStr = getFormattedDateTime();
+    const direction = transactionType === 'minus' ? 'DEN' : 'TU';
+    const cleanName = (counterpartyName || '').toUpperCase();
 
-    if (bank === 'vietinbank') {
-      const direction = transactionType === 'minus' ? 'DEN' : 'TU';
-      const cleanName = (counterpartyName || '').toUpperCase();
-      return `TK ${accountNumber}|GD: ${sign}${formattedAmount}VND ${timeStr} |SD: ${formattedBalance}VND|${direction}: ${cleanName} - ${counterpartyAccount}|ND: ${content}`;
-    } else if (bank === 'vcb') {
-      return `SD TK ${accountNumber} ${sign}${formattedAmount}VND lúc ${timeStr}. So du ${formattedBalance}VND. ND: ${content}`;
-    } else if (bank === 'mbbank') {
-      return `TK ${accountNumber} | GD: ${sign}${formattedAmount}VND | ${timeStr} | SD: ${formattedBalance}VND | ND: ${content}`;
-    } else {
-      return `Giao dịch ${sign}${formattedAmount} VND lúc ${timeStr}. Số dư: ${formattedBalance} VND. TK: ${accountNumber}. ND: ${content}`;
-    }
+    return `TK ${accountNumber} | GD: ${sign}${formattedAmount}VND ${timeStr} | SD: ${formattedBalance}VND | ${direction}: ${cleanName} - ${counterpartyAccount} | ND: ${content}`;
   };
 
   // Kích hoạt thông báo (Ngay lập tức hoặc hẹn giờ)
@@ -170,7 +160,7 @@ export default function App() {
 
         Alert.alert(
           'Đã kích hoạt hẹn giờ!',
-          `Thông báo sẽ xuất hiện sau ${seconds} giây. Bạn có thể KHÓA MÀN HÌNH ngay bây giờ để chờ thông báo và chuông nổ!`
+          `Thông báo sẽ xuất hiện sau ${seconds} giây. Bạn có thể KHÓA MÀN HÌNH ngay bây giờ để chờ chuông reo và sáng màn hình!`
         );
       } else {
         // Gửi ngay lập tức
@@ -209,38 +199,43 @@ export default function App() {
     Alert.alert('Đã hủy', 'Đã hủy lịch hẹn giờ thông báo.');
   };
 
-  // Nạp mẫu nhanh
+  // Nạp mẫu nhanh chuẩn MB Bank
   const loadPreset = (type) => {
-    if (type === 'sample_image') {
-      // Khớp 100% ảnh người dùng gửi
-      setBank('vietinbank');
-      setTransactionType('minus');
-      setAccountNumber('59xxx783');
-      setAmount('30000');
-      setBalance('882');
-      setCounterpartyName('NGUYEN PHUONG DUY');
-      setCounterpartyAccount('105887004147');
-      setContent('NGUYEN HOANG VINH chuyen tien');
-      setBadgeCount('7');
-    } else if (type === 'salary') {
-      setBank('vietinbank');
+    if (type === 'plus_5m') {
       setTransactionType('plus');
-      setAccountNumber('59xxx783');
-      setAmount('35000000');
-      setBalance('128850000');
-      setCounterpartyName('CONG TY TNHH CONG NGHE');
-      setCounterpartyAccount('10192837465');
-      setContent('Thanh toan tien luong thang 10');
+      setAccountNumber('0123456789');
+      setAmount('5000000');
+      setBalance('52500000');
+      setCounterpartyName('NGUYEN VAN A');
+      setCounterpartyAccount('0987654321');
+      setContent('NGUYEN VAN A chuyen tien');
       setBadgeCount('1');
-    } else if (type === 'deposit') {
-      setBank('vietinbank');
+    } else if (type === 'plus_50m') {
       setTransactionType('plus');
-      setAccountNumber('59xxx783');
+      setAccountNumber('0123456789');
       setAmount('50000000');
-      setBalance('75000882');
-      setCounterpartyName('HOANG VAN THU');
-      setCounterpartyAccount('10283746501');
-      setContent('Chuyen khoan dat coc mua xe');
+      setBalance('152500000');
+      setCounterpartyName('NGUYEN VAN A');
+      setCounterpartyAccount('0987654321');
+      setContent('NGUYEN VAN A thanh toan hop dong');
+      setBadgeCount('1');
+    } else if (type === 'minus_200k') {
+      setTransactionType('minus');
+      setAccountNumber('0123456789');
+      setAmount('200000');
+      setBalance('52300000');
+      setCounterpartyName('NGUYEN VAN A');
+      setCounterpartyAccount('0987654321');
+      setContent('Thanh toan tien hang');
+      setBadgeCount('1');
+    } else if (type === 'minus_2m') {
+      setTransactionType('minus');
+      setAccountNumber('0123456789');
+      setAmount('2000000');
+      setBalance('50500000');
+      setCounterpartyName('NGUYEN VAN A');
+      setCounterpartyAccount('0987654321');
+      setContent('Chuyen tien mua sam');
       setBadgeCount('1');
     }
   };
@@ -249,7 +244,7 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
 
-      {/* Ánh sáng nền Glassmorphism */}
+      {/* Ánh sáng nền Glassmorphism MB Bank Navy & Red */}
       <View style={[styles.glowOrb, styles.orbTop]} />
       <View style={[styles.glowOrb, styles.orbBottom]} />
 
@@ -262,7 +257,7 @@ export default function App() {
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
           >
-            {/* Header thương hiệu */}
+            {/* Header thương hiệu MB Bank */}
             <View style={styles.header}>
               <View style={styles.badgeRow}>
                 <View
@@ -272,18 +267,18 @@ export default function App() {
                   ]}
                 />
                 <Text style={styles.badgeText}>
-                  {permissionGranted ? 'VietinBank iPay • Sẵn Sàng' : 'Chờ Cấp Quyền iOS'}
+                  {permissionGranted ? 'MB Bank • Sẵn Sàng' : 'Chờ Cấp Quyền iOS'}
                 </Text>
               </View>
-              <Text style={styles.appTitle}>THÔNG BÁO BIẾN ĐỘNG SỐ DƯ</Text>
-              <Text style={styles.appSubtitle}>Tạo thông báo ngân hàng chuẩn iOS Physical Device</Text>
+              <Text style={styles.appTitle}>MB BANK</Text>
+              <Text style={styles.appSubtitle}>Thông Báo Biến Động Số Dư • iOS Physical Device</Text>
             </View>
 
-            {/* PREVIEW KHUNG THÔNG BÁO IOS THỜI GIAN THỰC (GIỐNG ẢNH 100%) */}
+            {/* PREVIEW KHUNG THÔNG BÁO IOS THỜI GIAN THỰC */}
             <View style={styles.previewContainer}>
               <Text style={styles.sectionHeaderTitle}>XEM TRƯỚC BANNER THÔNG BÁO (IOS PREVIEW)</Text>
               <View style={styles.iosNotificationBanner}>
-                {/* Icon App VietinBank iPay chính thức */}
+                {/* Icon App MB Bank chính thức */}
                 <View style={styles.bannerIconWrapper}>
                   <View style={styles.bannerIcon}>
                     <Image
@@ -315,22 +310,28 @@ export default function App() {
               <Text style={styles.sectionHeaderTitle}>MẪU CÓ SẴN (BẤM ĐỂ NẠP NHANH)</Text>
               <View style={styles.presetButtonsRow}>
                 <TouchableOpacity
-                  style={[styles.presetButton, styles.presetHighlight]}
-                  onPress={() => loadPreset('sample_image')}
+                  style={[styles.presetButton, styles.presetHighlightPlus]}
+                  onPress={() => loadPreset('plus_5m')}
                 >
-                  <Text style={styles.presetButtonText}>🔥 Khớp ảnh mẫu (-30K)</Text>
+                  <Text style={styles.presetButtonText}>💰 Nhận +5Tr</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={styles.presetButton}
-                  onPress={() => loadPreset('salary')}
+                  style={[styles.presetButton, styles.presetHighlightPlus]}
+                  onPress={() => loadPreset('plus_50m')}
                 >
-                  <Text style={styles.presetButtonText}>💰 Nhận lương (+35Tr)</Text>
+                  <Text style={styles.presetButtonText}>💎 Nhận +50Tr</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={styles.presetButton}
-                  onPress={() => loadPreset('deposit')}
+                  style={[styles.presetButton, styles.presetHighlightMinus]}
+                  onPress={() => loadPreset('minus_200k')}
                 >
-                  <Text style={styles.presetButtonText}>💎 Nhận cọc (+50Tr)</Text>
+                  <Text style={styles.presetButtonText}>💸 Chuyển -200K</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.presetButton, styles.presetHighlightMinus]}
+                  onPress={() => loadPreset('minus_2m')}
+                >
+                  <Text style={styles.presetButtonText}>💳 Chuyển -2Tr</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -341,23 +342,6 @@ export default function App() {
                 {/* Chọn loại giao dịch: Cộng (+) hoặc Trừ (-) */}
                 <Text style={styles.inputLabel}>LOẠI GIAO DỊCH</Text>
                 <View style={styles.typeSelectorRow}>
-                  <TouchableOpacity
-                    style={[
-                      styles.typeButton,
-                      transactionType === 'minus' && styles.typeButtonMinusActive,
-                    ]}
-                    onPress={() => setTransactionType('minus')}
-                  >
-                    <Text
-                      style={[
-                        styles.typeButtonText,
-                        transactionType === 'minus' && styles.typeButtonTextActive,
-                      ]}
-                    >
-                      🔴 Chuyển tiền ( - )
-                    </Text>
-                  </TouchableOpacity>
-
                   <TouchableOpacity
                     style={[
                       styles.typeButton,
@@ -374,6 +358,23 @@ export default function App() {
                       🟢 Nhận tiền ( + )
                     </Text>
                   </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.typeButton,
+                      transactionType === 'minus' && styles.typeButtonMinusActive,
+                    ]}
+                    onPress={() => setTransactionType('minus')}
+                  >
+                    <Text
+                      style={[
+                        styles.typeButtonText,
+                        transactionType === 'minus' && styles.typeButtonTextActive,
+                      ]}
+                    >
+                      🔴 Chuyển tiền ( - )
+                    </Text>
+                  </TouchableOpacity>
                 </View>
 
                 {/* Số tiền biến động */}
@@ -384,7 +385,7 @@ export default function App() {
                       styles.inputField,
                       { color: transactionType === 'minus' ? '#ef4444' : '#10b981', fontWeight: 'bold' },
                     ]}
-                    placeholder="VD: 30000 hoặc 50000000"
+                    placeholder="VD: 5000000"
                     placeholderTextColor="#64748b"
                     keyboardType="numeric"
                     value={amount}
@@ -403,7 +404,7 @@ export default function App() {
                     <View style={styles.inputBox}>
                       <TextInput
                         style={styles.inputField}
-                        placeholder="VD: 59xxx783"
+                        placeholder="VD: 0123456789"
                         placeholderTextColor="#64748b"
                         value={accountNumber}
                         onChangeText={setAccountNumber}
@@ -416,7 +417,7 @@ export default function App() {
                     <View style={styles.inputBox}>
                       <TextInput
                         style={styles.inputField}
-                        placeholder="VD: 882"
+                        placeholder="VD: 52500000"
                         placeholderTextColor="#64748b"
                         keyboardType="numeric"
                         value={balance}
@@ -435,7 +436,7 @@ export default function App() {
                     <View style={styles.inputBox}>
                       <TextInput
                         style={styles.inputField}
-                        placeholder="VD: NGUYEN PHUONG DUY"
+                        placeholder="VD: NGUYEN VAN A"
                         placeholderTextColor="#64748b"
                         autoCapitalize="characters"
                         value={counterpartyName}
@@ -449,7 +450,7 @@ export default function App() {
                     <View style={styles.inputBox}>
                       <TextInput
                         style={styles.inputField}
-                        placeholder="VD: 105887004147"
+                        placeholder="VD: 0987654321"
                         placeholderTextColor="#64748b"
                         value={counterpartyAccount}
                         onChangeText={setCounterpartyAccount}
@@ -463,7 +464,7 @@ export default function App() {
                 <View style={styles.inputBox}>
                   <TextInput
                     style={styles.inputField}
-                    placeholder="VD: NGUYEN HOANG VINH chuyen tien"
+                    placeholder="VD: NGUYEN VAN A chuyen tien"
                     placeholderTextColor="#64748b"
                     value={content}
                     onChangeText={setContent}
@@ -471,11 +472,11 @@ export default function App() {
                 </View>
 
                 {/* Số Badge Icon */}
-                <Text style={styles.inputLabel}>SỐ BADGE ĐỎ TRÊN ICON APP (MẶC ĐỊNH 7)</Text>
+                <Text style={styles.inputLabel}>SỐ BADGE ĐỎ TRÊN ICON APP (MẶC ĐỊNH 1)</Text>
                 <View style={styles.inputBox}>
                   <TextInput
                     style={styles.inputField}
-                    placeholder="VD: 7"
+                    placeholder="VD: 1"
                     placeholderTextColor="#64748b"
                     keyboardType="numeric"
                     value={badgeCount}
@@ -486,7 +487,7 @@ export default function App() {
                 {/* BỘ NÚT HẸN GIỜ & KÍCH HOẠT THÔNG BÁO */}
                 <Text style={[styles.inputLabel, { marginTop: 16 }]}>HẸN GIỜ GỬI THÔNG BÁO</Text>
                 <Text style={styles.hintText}>
-                  💡 Mẹo: Chọn 5 giây hoặc 10 giây, sau đó KHÓA MÀN HÌNH iPhone để đón nhận thông báo nổ chuông và sáng màn hình!
+                  💡 Mẹo: Bấm hẹn giờ (5s hoặc 10s), sau đó KHÓA MÀN HÌNH iPhone để chuông reo và sáng màn hình nhận thông báo!
                 </Text>
 
                 {isCountingDown ? (
@@ -551,7 +552,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#020b18',
+    backgroundColor: '#001338',
   },
   keyboardContainer: {
     flex: 1,
@@ -561,25 +562,25 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 40,
   },
-  // Ánh sáng nền Glassmorphism
+  // Ánh sáng nền Glassmorphism MB Bank Navy & Red
   glowOrb: {
     position: 'absolute',
     borderRadius: 300,
-    opacity: 0.28,
+    opacity: 0.32,
   },
   orbTop: {
     width: 380,
     height: 380,
     top: -60,
     right: -40,
-    backgroundColor: '#0055A5',
+    backgroundColor: '#003082',
   },
   orbBottom: {
     width: 340,
     height: 340,
     bottom: -60,
     left: -40,
-    backgroundColor: '#ED1C24',
+    backgroundColor: '#E30613',
   },
   // Header
   header: {
@@ -610,10 +611,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   appTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '900',
     color: '#ffffff',
-    letterSpacing: 1.2,
+    letterSpacing: 1.5,
     textAlign: 'center',
   },
   appSubtitle: {
@@ -622,7 +623,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     textAlign: 'center',
   },
-  // Preview Container (Mô phỏng Banner iOS giống hệt ảnh của người dùng)
+  // Preview Container (Mô phỏng Banner iOS)
   previewContainer: {
     marginBottom: 16,
   },
@@ -636,7 +637,7 @@ const styles = StyleSheet.create({
   },
   iosNotificationBanner: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(235, 235, 245, 0.88)', // Màu nền banner xám sáng chuẩn iOS
+    backgroundColor: 'rgba(235, 235, 245, 0.92)', // Màu nền banner xám sáng chuẩn iOS
     borderRadius: 18,
     padding: 12,
     shadowColor: '#000',
@@ -724,18 +725,22 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 10,
     paddingVertical: 10,
-    paddingHorizontal: 8,
+    paddingHorizontal: 6,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-  presetHighlight: {
-    backgroundColor: 'rgba(237, 28, 36, 0.22)',
-    borderColor: '#ed1c24',
+  presetHighlightPlus: {
+    backgroundColor: 'rgba(16, 185, 129, 0.22)',
+    borderColor: '#10b981',
+  },
+  presetHighlightMinus: {
+    backgroundColor: 'rgba(239, 68, 68, 0.22)',
+    borderColor: '#ef4444',
   },
   presetButtonText: {
     color: '#ffffff',
-    fontSize: 11.5,
+    fontSize: 11,
     fontWeight: '700',
   },
   // Form Glass Card
@@ -763,7 +768,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   inputBox: {
-    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    backgroundColor: 'rgba(0, 18, 56, 0.85)',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.12)',
@@ -808,13 +813,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.12)',
   },
-  typeButtonMinusActive: {
-    backgroundColor: 'rgba(239, 68, 68, 0.25)',
-    borderColor: '#ef4444',
-  },
   typeButtonPlusActive: {
     backgroundColor: 'rgba(16, 185, 129, 0.25)',
     borderColor: '#10b981',
+  },
+  typeButtonMinusActive: {
+    backgroundColor: 'rgba(239, 68, 68, 0.25)',
+    borderColor: '#ef4444',
   },
   typeButtonText: {
     color: '#94a3b8',

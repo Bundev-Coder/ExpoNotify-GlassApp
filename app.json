@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "VietinBank iPay",
-    "slug": "vietinbank-ipay",
+    "name": "MB Bank",
+    "slug": "mbbank",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.vietinbank.ipay.notify",
+      "bundleIdentifier": "com.mb.bank.notify",
       "infoPlist": {
-        "CFBundleDisplayName": "VietinBank iPay",
+        "CFBundleDisplayName": "MB Bank",
         "UIBackgroundModes": [
           "remote-notification"
         ],
@@ -19,12 +19,12 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#002a62",
+        "backgroundColor": "#001A4E",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "package": "com.vietinbank.ipay.notify"
+      "package": "com.mb.bank.notify"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -34,7 +34,7 @@
         "expo-notifications",
         {
           "icon": "./assets/icon.png",
-          "color": "#ed1c24"
+          "color": "#002A72"
         }
       ]
     ],
